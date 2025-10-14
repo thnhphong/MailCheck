@@ -9,10 +9,10 @@ Built with **Java Spring Boot (backend)** and **React.js + Tailwind CSS (fronten
 ## 🚀 Features
 
 - ✉️ **Send Emails** using SMTP  
-- 📥 **Fetch Inbox** messages using POP3  
+- 📥 **Fetch Inbox** messages using IMAP  
 - 🌐 **RESTful API** connecting backend and frontend  
 - 🎨 **Responsive UI** built with Tailwind CSS  
-- 🔐 Works with Gmail (using App Password and POP3/SMTP enabled)
+- 🔐 Works with Gmail (using App Password and IMAP/SMTP enabled)
 
 ---
 
