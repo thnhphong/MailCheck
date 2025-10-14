@@ -1,6 +1,0 @@
-com\mailcheck\MailCheckApplication.class
-com\mailcheck\service\EmailService.class
-com\mailcheck\controller\EmailController.class
-com\mailcheck\service\impl\EmailServiceImpl.class
-com\example\fullstack\App.class
-com\mailcheck\model\EmailDto.class
