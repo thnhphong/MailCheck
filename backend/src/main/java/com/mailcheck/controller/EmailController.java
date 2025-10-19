@@ -3,6 +3,9 @@ package com.mailcheck.controller;
 import com.mailcheck.model.EmailDto;
 import com.mailcheck.service.EmailService;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.Multipart;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -12,8 +15,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import jakarta.mail.Message;
+import jakarta.mail.Part;
 
 @RestController
 @RequestMapping("/api/emails")
@@ -133,26 +142,44 @@ public class EmailController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+    // Example method in EmailService to save attachments during fetch
+    public List<String> saveAttachments(Message msg) throws Exception {
+        List<String> savedFiles = new ArrayList<>();
+        if (msg.isMimeType("multipart/*")) {
+            Multipart multipart = (Multipart) msg.getContent();
+            for (int i = 0; i < multipart.getCount(); i++) {
+                BodyPart part = multipart.getBodyPart(i);
+                if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+                    String filename = part.getFileName();
+                    File file = new File("uploads/" + filename);
+                    try (InputStream is = part.getInputStream(); FileOutputStream fos = new FileOutputStream(file)) {
+                        byte[] buf = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = is.read(buf)) != -1) {
+                            fos.write(buf, 0, bytesRead);
+                        }
+                    }
+                    savedFiles.add(filename);
+                }
+            }
+        }
+        return savedFiles;
+    }
+
 
     // ✅ Serve uploaded files (optional)
     @GetMapping("/uploads/{filename:.+}")
     public ResponseEntity<Resource> getUploadedFile(@PathVariable String filename) {
-        try {
-            File file = new File("uploads/" + filename);
-            if (!file.exists()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            Resource resource = new FileSystemResource(file);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        File file = new File("uploads/" + filename);
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
         }
-    }
+        Resource resource = new FileSystemResource(file);
+        String mimeType = URLConnection.guessContentTypeFromName(file.getName());
+        MediaType mediaType = (mimeType != null) ? MediaType.parseMediaType(mimeType) : MediaType.APPLICATION_OCTET_STREAM;
+        return ResponseEntity.ok().contentType(mediaType).body(resource);
+}
+
 
     public JavaMailSender getMailSender() {
         return mailSender;

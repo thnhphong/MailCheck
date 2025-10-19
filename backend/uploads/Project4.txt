@@ -1,0 +1,17 @@
+SSL Server and Browser Tests
+Over view: Testing the security of web servers and local web by using tools such as Qualys SSL Labs.
+Content: Testing a highly rated website's SSL configuration, then switch to a poorly rated website, comparing the security of two different web browsers.
+Key: 
+Use SSL Lab's SSL Server Test to test good and bad websites.
+Review overall ratings, focus on elements such as Certificate, Protocol Support, Key Exchange, and Cipher Strength.
+Understand how handshake simulation work, showing how browsers negotiate security parameters with the server.
+Analyze the order and type of cipher suites supported, consider more secure cipher suites need to be prioritized.
+Evaluate and compare the security configurations of web browsers, determine which has better projection.
+Outcomes: 
+Practical skills in accessing SSL/TLS configuration of web servers.
+Identify security vulnerabilities: outdated protocols or weak cipher suites.
+Build a prioritized action plan for improving server and browser security.
+
+Scroll into testing: 
+1) Go to https://www.ssllabs.com/ssltest and paste whatever website url you want.
+2) I chose medium.com(social media: blog, articles, stories...), facebook.com(social media) and cloudinary.com(uploading, storing images and videos platform)

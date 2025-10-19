@@ -1,0 +1,7 @@
+send and receive data
+
+CLIENT                                                                  SERVER
+wants to send data, 
+send data to output stream --------------------------> receives data from input stream
+wants to read data ->
+check data from input stream <------------------------ sends data to server output stream

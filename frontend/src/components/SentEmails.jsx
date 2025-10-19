@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import '../App.css';
+import EmailAttachments from "./EmailAttachments";
 const SentEmails = ({ currentUser }) => {
   const [emails, setEmails] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,25 +52,7 @@ const SentEmails = ({ currentUser }) => {
               <p className="font-semibold mb-1">{email.subject}</p>
               <p className="text-gray-700 whitespace-pre-line">{email.body}</p>
 
-              {email.attachments && email.attachments.length > 0 && (
-                <div className="mt-3">
-                  <p className="font-medium">📎 Attachments:</p>
-                  <ul className="list-disc list-inside">
-                    {email.attachments.map((file, i) => (
-                      <li key={i}>
-                        <a
-                          href={`http://localhost:8080/api/emails/uploads/${file}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline hover:text-blue-800"
-                        >
-                          {file}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <EmailAttachments attachments={email.attachments} />
             </li>
           ))}
         </ul>

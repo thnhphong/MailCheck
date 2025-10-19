@@ -1,0 +1,243 @@
+import java.io.*;
+import java.net.*;
+
+public class Ex1Client {
+    private static final String SERVER_IP = "localhost";
+    private static final int SERVER_PORT = 9876;
+
+    public static void main(String[] args) throws Exception {
+        BufferedReader inputFromUser = new BufferedReader(new InputStreamReader(System.in));
+        DatagramSocket clientSocket = new DatagramSocket();
+        InetAddress IPAddress = InetAddress.getByName(SERVER_IP);
+
+        byte[] sendData;
+        byte[] receiveData = new byte[1024];
+
+        while (true) {
+            System.out.print("Enter a string: ");
+            String string = inputFromUser.readLine();
+
+            sendData = string.getBytes();
+
+            // Gửi dữ liệu đến server
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, SERVER_PORT);
+            clientSocket.send(sendPacket);
+
+            // Nếu gõ "exit" thì thoát không cần chờ phản hồi
+            if (string.equalsIgnoreCase("exit")) {
+                System.out.println("Disconnected.");
+                break;
+            }
+
+            // Nhận phản hồi từ server
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            clientSocket.receive(receivePacket);
+
+            String modifiedString = new String(receivePacket.getData(), 0, receivePacket.getLength());
+            System.out.println("From server: " + modifiedString);
+        }
+
+        clientSocket.close();
+    }
+}
+
+
+
+import java.net.*;
+
+public class Ex1Server {
+    private static final int PORT = 9876;
+    public static void main(String[] args) throws Exception {
+        DatagramSocket serverSocket = new DatagramSocket(PORT);
+        byte[] receiveData = new byte[1024];
+        byte[] sendData = new byte[1024];
+
+        System.out.println("UDP Server is running on port " + PORT);
+        while (true) {
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            serverSocket.receive(receivePacket);
+
+            String string = new String(receivePacket.getData(), 0, receivePacket.getLength());
+            InetAddress clientAddress = receivePacket.getAddress();
+            int port = receivePacket.getPort();
+
+            String capitalizedString = string.toUpperCase();
+            sendData = capitalizedString.getBytes();
+
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, clientAddress, port);
+            serverSocket.send(sendPacket);
+        }
+    }
+}
+
+
+import java.net.*;
+
+public class Ex1ServerWithThread {
+
+    public static void main(String[] args) throws Exception {
+        int serverPort = 9876;
+        DatagramSocket serverSocket = new DatagramSocket(serverPort);
+        System.out.println("UDP Server is running on port " + serverPort);
+
+        while (true) { // Continuous loop to receive multiple packets
+            byte[] receiveData = new byte[1024];
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            serverSocket.receive(receivePacket); // Blocks until a packet is received
+
+            // Create a new thread for each incoming request
+            RequestProcessing rp = new RequestProcessing(serverSocket, receivePacket);
+            rp.start();
+        }
+    }
+
+    static class RequestProcessing extends Thread {
+        DatagramPacket receivePacket;
+        DatagramSocket serverSocket; // The same serverSocket is passed to allow sending
+
+        public RequestProcessing(DatagramSocket serverSocket, DatagramPacket receivePacket) {
+            this.serverSocket = serverSocket;
+            this.receivePacket = receivePacket;
+        }
+
+        @Override
+        public void run() {
+            try {
+                InetAddress ip = receivePacket.getAddress();
+                int clientPort = receivePacket.getPort();
+                byte[] receivedBytes = receivePacket.getData();
+                
+                // Trim the received data to its actual length to avoid processing null bytes
+                String receivedString = new String(receivedBytes, 0, receivePacket.getLength());
+                String capitalString = receivedString.toUpperCase();
+
+                byte[] sendData = capitalString.getBytes();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ip, clientPort);
+                serverSocket.send(sendPacket);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+
+
+import java.io.IOException;
+import java.net.*;
+import java.util.Scanner;
+
+public class SumClient {
+    private static final String SERVER_ADDRESS = "localhost";
+    private static final int SERVER_PORT = 9876;
+    private static final int BUFFER_SIZE = 1024;
+
+    public static void main(String[] args) {
+        // Use try-with-resources to ensure the socket is automatically closed
+        try (DatagramSocket clientSocket = new DatagramSocket()) {
+            InetAddress serverAddress = InetAddress.getByName(SERVER_ADDRESS);
+            byte[] sendData;
+            byte[] receiveData = new byte[BUFFER_SIZE];
+            Scanner scanner = new Scanner(System.in);
+
+            System.out.println("UDP Client is running.");
+            System.out.println("Enter numbers separated by spaces (e.g., '10 20 30') or 'exit' to quit:");
+
+            while (true) {
+                System.out.print("> ");
+                String numbersToSend = scanner.nextLine();
+
+                if ("exit".equalsIgnoreCase(numbersToSend)) {
+                    break;
+                }
+
+                // Convert the user input string to bytes and prepare a packet
+                sendData = numbersToSend.getBytes();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, SERVER_PORT);
+                
+                // Send the packet to the server
+                clientSocket.send(sendPacket);
+                System.out.println("Sent '" + numbersToSend + "' to server.");
+
+                // Create a packet to receive the server's response
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                
+                // Wait to receive the response
+                clientSocket.receive(receivePacket);
+
+                // Convert the response bytes to a string
+                String receivedMessage = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                System.out.println("Received from server: " + receivedMessage);
+            }
+
+            System.out.println("Client shutting down.");
+
+        } catch (IOException e) {
+            System.err.println("Client error: " + e.getMessage());
+        }
+    }
+}
+
+
+
+import java.net.*;
+
+public class SumServer {
+    private static final int PORT = 9876;
+    private static final int BUFFER_SIZE = 1024;
+
+    public static void main(String[] args) throws Exception {
+        DatagramSocket serverSocket = new DatagramSocket(PORT);
+        byte[] receiveData = new byte[BUFFER_SIZE];
+        byte[] sendData;
+
+        System.out.println("UDP Server is running on port " + PORT);
+
+        while (true) {
+            // Reset the receive buffer for each new packet
+            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+            serverSocket.receive(receivePacket);
+
+            String clientMsg = new String(receivePacket.getData(), 0, receivePacket.getLength());
+            System.out.println("Received from client: " + clientMsg);
+
+            // Calculate the sum, with error handling
+            try {
+                String[] numbers = clientMsg.split(" ");
+                int sum = 0; // The sum variable must be initialized inside the loop
+                for (String numStr : numbers) {
+                    sum += Integer.parseInt(numStr.trim());
+                }
+
+                String response = String.valueOf(sum);
+                sendData = response.getBytes();
+
+                // Send the response back to the client
+                DatagramPacket sendPacket = new DatagramPacket(
+                    sendData,
+                    sendData.length,
+                    receivePacket.getAddress(),
+                    receivePacket.getPort()
+                );
+                serverSocket.send(sendPacket);
+                System.out.println("Sent sum (" + response + ") to client.");
+
+            } catch (NumberFormatException e) {
+                // Handle cases where the client sent non-numeric data
+                String errorMsg = "Invalid input. Please send numbers separated by spaces.";
+                sendData = errorMsg.getBytes();
+
+                DatagramPacket errorPacket = new DatagramPacket(
+                    sendData,
+                    sendData.length,
+                    receivePacket.getAddress(),
+                    receivePacket.getPort()
+                );
+                serverSocket.send(errorPacket);
+                System.err.println("Invalid input from client. Sent error message.");
+            }
+        }
+    }
+}
+
+

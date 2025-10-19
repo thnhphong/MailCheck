@@ -1,0 +1,70 @@
+//date time 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+public class ConnectServer {
+    public static void main(String[] args) {
+    	String hostname = "time.nist.gov";
+    	int port = 13;
+    	
+    	try(Socket socket = new Socket(hostname, port)){
+    		BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    		
+    		String line;
+    		while ((line = reader.readLine()) != null) {
+    			System.out.println(line);
+    		}
+    	}catch(UnknownHostException ex) {
+    		System.out.println("Server not found: " + hostname);
+    	}catch(IOException ex) {
+    		System.out.println("Error I/O");
+    		ex.printStackTrace();
+    	}
+    }
+}
+//scan ports
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.Socket;
+
+public class ConnectServer {
+    public static void main(String[] args) {
+        String host = "localhost";
+        int start = 1;
+        int end = 65536;
+
+        System.out.println("Scanning ports " + start + " to " + end + " on " + host + "...");
+
+        for (int port = start; port <= end; port++) {
+            try {
+                Socket socket = new Socket(host, port);
+                System.out.println("Port " + port + " is open.");
+                socket.close();
+            } catch (IOException ex) {
+                System.err.println("Error on port " + port + ": " + ex.getMessage());
+            }
+        }
+        System.out.println("Port scan completed.");
+    }
+}
+//connecting 
+import java.net.*;
+import java.io.*;
+public class ConnectServer {
+	public static void main(String[] args) {
+		String host = "google.com";
+		try {
+			Socket socket = new Socket(host, 80);
+			System.out.println("Connected to " + socket.getInetAddress() + " on port " + socket.getPort() + " from port " + socket.getLocalPort() + "of " + socket.getLocalAddress());
+		}catch(UnknownHostException ex) {
+			System.out.println("Not found " + host);
+		}catch(SocketException ex) {
+			System.out.println("Could not connect to " + host);
+		}catch(IOException ex) {
+			System.out.println(ex);
+		}
+	}
+}
