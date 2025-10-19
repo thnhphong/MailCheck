@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import '../App.css';
 
 const SendMail = ({ currentUser }) => {
   const [email, setEmail] = useState({
@@ -57,7 +58,7 @@ const SendMail = ({ currentUser }) => {
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10">
       <h2 className="text-3xl font-semibold text-gray-800 mb-6 flex items-center">
-        <span className="text-pink-600 mr-2 text-4xl">✉️</span> Compose Email
+        <span className="text-white  mr-2 text-4xl">✉️</span> Compose Email
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">

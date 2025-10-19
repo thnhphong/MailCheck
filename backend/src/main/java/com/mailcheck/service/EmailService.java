@@ -10,4 +10,5 @@ public interface EmailService {
     List<EmailDto> getInbox();
     List<EmailDto> getSent();
     List<EmailDto> fetchInboxFromIMAP(String userEmail, String appPassword) throws Exception;
+    List<EmailDto> fetchSentFromIMAP(String userEmail, String appPassword) throws Exception;
 }

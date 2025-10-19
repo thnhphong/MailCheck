@@ -7,6 +7,7 @@ import SentEmails from "./components/SentEmails";
 import SendMail from "./components/SendMail";
 import './App.css';
 
+
 const App = () => {
   const currentUser = localStorage.getItem("currentUser");
 

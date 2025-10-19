@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
-
+import '../App.css';
 const SentEmails = ({ currentUser }) => {
   const [emails, setEmails] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadSent = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/emails/sent");
+      const appPassword = localStorage.getItem("appPassword");
+      const res = await fetch(
+        `http://localhost:8080/api/emails/sent-imap?user=${encodeURIComponent(currentUser)}&appPassword=${encodeURIComponent(appPassword)}`
+      );
+
       if (!res.ok) throw new Error("Failed to fetch sent emails");
       const data = await res.json();
       // Optional: only show emails sent by current user

@@ -121,6 +121,47 @@ public void sendEmail(EmailDto email, List<MultipartFile> attachments) throws Ex
         return fetchedEmails;
     }
 
+    @Override
+    public List<EmailDto> fetchSentFromIMAP(String userEmail, String appPassword) throws Exception {
+        List<EmailDto> sentEmails = new ArrayList<>();
+
+        Properties props = new Properties();
+        props.put("mail.store.protocol", "imaps");
+        props.put("mail.imaps.host", "imap.gmail.com");
+        props.put("mail.imaps.port", 993);
+        props.put("mail.imaps.ssl.enable", "true");
+
+        Session session = Session.getInstance(props);
+        try (Store store = session.getStore("imaps")) {
+            System.out.println("Connecting to gmail sent folder");
+            store.connect("imap.gmail.com", userEmail, appPassword);
+            
+            // Gmail uses "Sent Mail" as the folder name
+            Folder sentFolder = store.getFolder("[Gmail]/Sent Mail");
+            sentFolder.open(Folder.READ_ONLY);
+            
+            int messageCount = sentFolder.getMessageCount();
+            int start = Math.max(1, messageCount - 9);
+            Message[] messages = sentFolder.getMessages(start, messageCount);
+            
+            for (int i = messages.length - 1; i >= 0; i--) {
+                Message msg = messages[i];
+                String to = (msg.getAllRecipients() != null && msg.getAllRecipients().length > 0)
+                        ? msg.getAllRecipients()[0].toString()
+                        : "(unknown)";
+                String subject = msg.getSubject() != null ? msg.getSubject() : "(no subject)";
+                String body = extractTextFromMessage(msg);
+                
+                sentEmails.add(new EmailDto(userEmail, to, subject, body, List.of()));
+            }
+            
+            sentFolder.close(false);
+        }
+
+        System.out.println("✅ IMAP Sent Fetch Complete — " + sentEmails.size() + " messages loaded.");
+        return sentEmails;
+    }
+
     private String extractTextFromMessage(Message message) throws Exception {
         if (message.isMimeType("text/plain")) {
             return message.getContent().toString();

@@ -13,10 +13,10 @@ const Login = () => {
     }
 
     localStorage.setItem("currentUser", "thnhphong4869@gmail.com");
-    localStorage.setItem("appPassword", "");
+    localStorage.setItem("appPassword", "vayujfptwffliixg");
     navigate("/inbox");
   };
-  
+
 
 
   return (

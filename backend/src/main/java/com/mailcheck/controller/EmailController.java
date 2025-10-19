@@ -59,6 +59,22 @@ public class EmailController {
 
         return ResponseEntity.ok(inbox);
     }
+    // ✅ GET /api/emails/sent-imap?user=email@gmail.com&appPassword=xxxx
+    @GetMapping("/sent-imap")
+    public ResponseEntity<List<EmailDto>> loadSentFromImap(
+            @RequestParam String user,
+            @RequestParam String appPassword
+    ) {
+        try {
+            List<EmailDto> emails = emailService.fetchSentFromIMAP(user, appPassword);
+            return ResponseEntity.ok(emails);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
+
 
     // ✅ GET /api/emails/sent
     @GetMapping("/sent")
