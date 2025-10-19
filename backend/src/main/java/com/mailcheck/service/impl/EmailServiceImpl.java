@@ -41,13 +41,13 @@ public class EmailServiceImpl implements EmailService {
         System.out.println("  To: " + email.getTo());
         System.out.println("  Subject: " + email.getSubject());
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true); 
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
         helper.setFrom(email.getFrom());
         helper.setTo(email.getTo());
         helper.setSubject(email.getSubject());
         helper.setText(email.getBody(), false);
-        
+
         if (attachments != null && !attachments.isEmpty()) {
             for (MultipartFile file : attachments) {
                 if (file != null && !file.isEmpty()) {
